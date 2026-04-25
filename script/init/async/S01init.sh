@@ -56,11 +56,12 @@ DO_START() {
 }
 
 DO_STOP() {
-	BATTERY stop
-
+	timeout 5 sh -c 'BATTERY stop' 2>/dev/null
 	[ "$DEBUG_FS" -eq 1 ] && umount /sys/kernel/debug 2>/dev/null
 
-	/opt/muos/script/device/module.sh unload
+	if ! timeout 10 /opt/muos/script/device/module.sh unload; then
+		LOG_WARN "$0" 0 "SHUTDOWN" "Module unload timed out or failed... continuing!"
+	fi
 }
 
 case "$1" in
