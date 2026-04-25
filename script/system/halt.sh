@@ -6,6 +6,8 @@ BOARD_NAME=$(GET_VAR "device" "board/name")
 RUMBLE_DEVICE="$(GET_VAR "device" "board/rumble")"
 RUMBLE_SETTING="$(GET_VAR "config" "settings/advanced/rumble")"
 
+INIT_DIR="/opt/muos/script/init"
+
 USAGE() {
 	printf 'Usage: %s {poweroff|reboot}\n' "$0" >&2
 	exit 1
@@ -16,6 +18,8 @@ case "$1" in
 	poweroff | reboot) ;;
 	*) USAGE ;;
 esac
+
+ACTION=$1
 
 set --
 for OMIT_PID in $(pidof /opt/muos/frontend/muterm /sbin/mount.exfat-fuse 2>/dev/null); do
@@ -111,6 +115,41 @@ KILL_AND_WAIT() {
 	return 1
 }
 
+# Iterate one init directory's S??* scripts in reverse order,
+# invoking each with `stop` under its own per-script timeout.
+#
+# Usage: STOP_DIR PATH LABEL
+STOP_DIR() {
+	DIR=$1
+	LABEL=$2
+
+	if [ ! -d "$DIR" ]; then
+		LOG_WARN "$0" 0 "HALT" "$(printf "Skipping %s: %s does not exist" "$LABEL" "$DIR")"
+		return 0
+	fi
+
+	SCRIPT_LIST=$(find "$DIR" -maxdepth 1 -name 'S??*' -type f 2>/dev/null | sort -r)
+	if [ -z "$SCRIPT_LIST" ]; then
+		LOG_WARN "$0" 0 "HALT" "$(printf "Skipping %s: no S??* scripts found in %s" "$LABEL" "$DIR")"
+		return 0
+	fi
+
+	echo "$SCRIPT_LIST" | while IFS= read -r SCRIPT; do
+		[ -f "$SCRIPT" ] || continue
+		NAME=$(basename "$SCRIPT")
+		LOG_INFO "$0" 0 "HALT" "$(printf "Stopping %s (%s)" "$NAME" "$LABEL")"
+		case "$SCRIPT" in
+			*.sh) RUN_WITH_TIMEOUT 8 3 /bin/sh "$SCRIPT" stop ;;
+			*) RUN_WITH_TIMEOUT 8 3 "$SCRIPT" stop ;;
+		esac
+	done
+}
+
+STOP_SERVICES() {
+	STOP_DIR "$INIT_DIR" "normal"
+	STOP_DIR "$INIT_DIR/async" "async"
+}
+
 LOG_INFO "$0" 0 "HALT" "Stopping muX services"
 MUXCTL stop
 
@@ -139,9 +178,6 @@ if [ "$(GET_VAR "config" "settings/advanced/random_theme")" -eq 1 ] 2>/dev/null;
 	/opt/muos/script/package/theme.sh install "?R"
 fi
 
-LOG_INFO "$0" 0 "HALT" "Stopping USB gadget"
-/opt/muos/script/system/usb_gadget.sh stop
-
 LOG_INFO "$0" 0 "HALT" "Disabling swap"
 swapoff -a
 
@@ -152,14 +188,17 @@ RUN_WITH_TIMEOUT 5 2 hwclock --systohc --utc
 LOG_INFO "$0" 0 "HALT" "Resetting used_reset variable"
 SET_VAR "system" "used_reset" 0
 
-# rcK subtrees are fully reaped via the process-group kill in RUN_WITH_TIMEOUT.
+# Run S??* stop scripts directly in reverse order
 LOG_INFO "$0" 0 "HALT" "Stopping system services"
-RUN_WITH_TIMEOUT 10 5 /etc/init.d/rcK
+STOP_SERVICES
+
+LOG_SUCCESS "$0" 0 "HALT" "Service stop sequence complete!"
 
 # Send SIGTERM to remaining processes. Wait up to 10s before mopping up
 # with SIGKILL, then wait up to 1s more for everything to die.
-LOG_INFO "$0" 0 "HALT" "Terminating remaining processes"
+LOG_INFO "$0" 0 "HALT" "Terminating remaining processes (TERM)"
 if ! KILL_AND_WAIT 10 TERM "$@"; then
+	LOG_WARN "$0" 0 "HALT" "TERM timeout; escalating to KILL"
 	KILL_AND_WAIT 1 KILL "$@"
 fi
 
@@ -171,21 +210,24 @@ case "$RUMBLE_SETTING" in
 		;;
 esac
 
-# Sync filesystems before beginning the standard halt sequence. If a
-# subsequent step hangs (or the user hard resets), syncing here reduces
-# the likelihood of corrupting muOS configs, RetroArch autosaves, etc.
+# Sync filesystems before handing off. If init subsequent `umount -a -r`
+# (from inittab) hangs, or the user hard resets, syncing here reduces the
+# likelihood of corrupting any configs, RetroArch autosaves, etc...
 LOG_INFO "$0" 0 "HALT" "Syncing writes to disk"
 sync
 
-# Graceful unmount first; fall back to lazy detach if it times out so a stuck
-# FUSE mount can't prevent the rest of the sequence from completing.
-LOG_INFO "$0" 0 "HALT" "Unmounting storage devices"
-if ! RUN_WITH_TIMEOUT 10 5 umount -ar; then
-	LOG_INFO "$0" 0 "HALT" "Graceful unmount failed — falling back to lazy detach"
-	RUN_WITH_TIMEOUT 5 2 umount -al 2>/dev/null || true
-fi
+# NOTE: We deliberately do NOT call `umount -ar` here!
+#
+# Long story short, the `/etc/inittab` declares `::shutdown:/bin/umount -a -r` which
+# BusyBox init runs automatically after our handoff to poweroff/reboot. More importantly,
+# calling umount -ar from this script can hang in D-state (uninterruptible sleep) if
+# any FUSE mount's userspace daemon was killed by the TERM/KILL sweep above the kernel
+# waits forever for replies that won't come, and RUN_WITH_TIMEOUT cannot rescue a
+# process stuck in D-state because signals are queued but not delivered until the
+# it returns from kernel space. https://www.youtube.com/watch?v=rksCTVFtjM4
 
-"$1" -f
+LOG_INFO "$0" 0 "HALT" "$(printf "Handing off to %s -f" "$ACTION")"
+"$ACTION" -f
 
 case "$BOARD_NAME" in
 	rg*) echo 0x1801 >"/sys/class/axp/axp_reg" ;;
