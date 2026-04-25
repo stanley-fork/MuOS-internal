@@ -12,6 +12,4 @@ SETUP_APP "$APP_BIN" ""
 
 cd "$HOME" || exit
 
-# TODO: Use the variables from the theme if found, will also have
-# TODO: adjust for high DPI devices like the Brick and Vita Pro...
-/opt/muos/frontend/muterm -s 15 --font-hinting mono
+/opt/muos/frontend/muterm
