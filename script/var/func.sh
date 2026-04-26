@@ -195,6 +195,66 @@ RESTORE_AUDIO_VOLUME() {
 	/opt/muos/script/device/audio.sh "$SAVED_VOL"
 }
 
+VOLUME_RAMP() {
+	DIR="${1:-}"
+	TARGET="${2:-}"
+	STEP="${3:-5}"
+	DELAY="${4:-0.01}"
+
+	POWER_POP=$(GET_VAR "config" "settings/advanced/power_pop")
+	[ -n "$POWER_POP" ] || POWER_POP=0
+
+	[ "$POWER_POP" -eq 1 ] && return 0
+
+	case "$DIR" in
+		up | down) ;;
+		*)
+			printf "Usage: VOLUME_RAMP up|down [target%%] [step] [delay]\n" >&2
+			return 1
+			;;
+	esac
+
+	for _ in 1 2 3 4 5 6 7 8 9 10; do
+		wpctl inspect @DEFAULT_AUDIO_SINK@ >/dev/null 2>&1 && break
+		sleep 0.5
+	done
+
+	CUR_VOL=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | sed -n 's/.* \([0-9.]*\).*/\1/p')
+	[ -n "$CUR_VOL" ] || CUR_VOL=0
+
+	CUR_PCT=$(printf "%.0f" "$(echo "$CUR_VOL * 100" | awk '{printf "%f", $1}')")
+
+	case "$DIR" in
+		up)
+			[ -z "$TARGET" ] && TARGET=$(GET_SAVED_AUDIO_VOLUME)
+			[ "$CUR_PCT" -gt "$TARGET" ] && CUR_PCT="$TARGET"
+
+			while [ "$CUR_PCT" -lt "$TARGET" ]; do
+				CUR_PCT=$((CUR_PCT + STEP))
+				[ "$CUR_PCT" -gt "$TARGET" ] && CUR_PCT="$TARGET"
+
+				wpctl set-volume @DEFAULT_AUDIO_SINK@ "${CUR_PCT}%" >/dev/null 2>&1
+				sleep "$DELAY"
+			done
+			;;
+		down)
+			[ -n "$TARGET" ] || TARGET=0
+
+			while [ "$CUR_PCT" -gt "$TARGET" ]; do
+				CUR_PCT=$((CUR_PCT - STEP))
+				[ "$CUR_PCT" -lt "$TARGET" ] && CUR_PCT="$TARGET"
+
+				wpctl set-volume @DEFAULT_AUDIO_SINK@ "${CUR_PCT}%" >/dev/null 2>&1
+				sleep "$DELAY"
+			done
+
+			[ "$TARGET" -eq 0 ] && wpctl set-mute @DEFAULT_AUDIO_SINK@ 1 >/dev/null 2>&1
+			;;
+	esac
+
+	return 0
+}
+
 SET_DEFAULT_GOVERNOR() {
 	(
 		DEF_GOV=$(GET_VAR "device" "cpu/default")

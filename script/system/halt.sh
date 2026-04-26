@@ -145,6 +145,8 @@ STOP_DIR() {
 	done
 }
 
+VOLUME_RAMP down
+
 STOP_SERVICES() {
 	STOP_DIR "$INIT_DIR" "normal"
 	STOP_DIR "$INIT_DIR/async" "async"

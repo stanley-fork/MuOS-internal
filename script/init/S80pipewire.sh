@@ -249,6 +249,7 @@ DO_START() {
 	LOG_INFO "$0" 0 "PIPEWIRE" "Restoring Audio State"
 	alsactl -U -f "$DEVICE_CONTROL_DIR/asound.state" restore >/dev/null 2>&1
 
+	VOLUME_RAMP up
 	RESET_MIXER
 
 	FINALISE_AUDIO || exit 1
