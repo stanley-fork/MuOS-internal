@@ -54,9 +54,11 @@ if [ "$SKIP" -eq 0 ]; then
 	esac
 fi
 
-BL_PATH="$ROM_MOUNT/MUOS/log/boot"
-mkdir -p "$BL_PATH"
-cp "$MUOS_LOG_DIR"/*.log "$BL_PATH"/. &
+if [ "$DEBUG_MODE" -eq 1 ]; then
+	BL_PATH="$ROM_MOUNT/MUOS/log/boot"
+	mkdir -p "$BL_PATH"
+	cp "$MUOS_LOG_DIR"/*.log "$BL_PATH"/.
+fi
 
 LOG_INFO "$0" 0 "FRONTEND" "Starting Frontend Launcher"
 
