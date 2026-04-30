@@ -1296,3 +1296,18 @@ RESTORE_CPU_GOV() {
 IS_MUTERM() {
 	[ "$(cat /proc/$PPID/comm 2>/dev/null)" = "muterm" ]
 }
+
+FBCON_DISABLE() {
+  	# TODO: Add advanced option for blinkies! (for antiKk)
+	for VTCON in /sys/class/vtconsole/vtcon*; do
+		[ -e "$VTCON/name" ] || continue
+
+		VT_NAME="$(cat "$VTCON/name" 2>/dev/null)"
+		case "$VT_NAME" in
+			*frame*buffer* | *fbcon*) [ -w "$VTCON/bind" ] && printf "0\n" >"$VTCON/bind" ;;
+		esac
+	done
+
+	[ -w /sys/class/graphics/fbcon/cursor_blink ] && printf "0\n" >/sys/class/graphics/fbcon/cursor_blink
+	[ -w /sys/module/vt/parameters/default_utf8 ] && printf "1\n" >/sys/module/vt/parameters/default_utf8
+}

@@ -1,6 +1,8 @@
 #!/bin/sh
 # shellcheck source=/dev/null
 
+. /opt/muos/script/var/func.sh
+
 INIT_DIR="/opt/muos/script/init"
 
 RUN_SCRIPT() {
@@ -44,6 +46,8 @@ RUN_ASYNC() {
 		(RUN_SCRIPT "$SCRIPT") >/dev/null 2>&1 &
 	done
 }
+
+FBCON_DISABLE
 
 RUN_ASYNC "$INIT_DIR/async"
 RUN_NORMAL "$INIT_DIR"
