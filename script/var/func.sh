@@ -1305,6 +1305,131 @@ UPDATE_BOOTLOGO() {
 	return 0
 }
 
+SHOW_SPLASH() {
+	ROLE="${1:-load}"
+
+	SPLASH_BIN="/opt/muos/frontend/musplash"
+	[ -x "$SPLASH_BIN" ] || return 1
+
+	case "$ROLE" in
+		bootlogo | shutdown | reboot | reset | load) ;;
+		clear) "$SPLASH_BIN" -c && return 0 ;;
+		*) return 1 ;;
+	esac
+
+	DEVICE_W=$(GET_VAR "device" "screen/internal/width")
+	DEVICE_H=$(GET_VAR "device" "screen/internal/height")
+
+	[ -n "$DEVICE_W" ] || DEVICE_W=$(GET_VAR "device" "screen/width")
+	[ -n "$DEVICE_H" ] || DEVICE_H=$(GET_VAR "device" "screen/height")
+	[ -n "$DEVICE_W" ] || return 1
+	[ -n "$DEVICE_H" ] || return 1
+
+	ACTIVE=$(GET_VAR "config" "theme/active")
+	THEME_DIR="$MUOS_STORE_DIR/theme/$ACTIVE"
+	RES_DIR="${DEVICE_W}x${DEVICE_H}"
+
+	# TODO: Add splash scale to advanced options
+	SCALE=$(GET_VAR "config" "settings/advanced/splash_scale")
+	case "$SCALE" in
+		0 | 1 | 2 | 3) ;;
+		*) SCALE=0 ;;
+	esac
+
+	case "$(GET_VAR "device" "board/name")" in
+		rg28xx-h | rg-vita-pro) ROTATE=270 ;;
+		*) ROTATE=0 ;;
+	esac
+
+	BACKGROUND_COLOUR="000000"
+	BACKGROUND_GRADIENT_COLOUR="000000"
+	PNG_RECOLOUR="FFFFFF"
+	PNG_RECOLOUR_ALPHA=0
+
+	NORMALISE_HEX() {
+		VAL="${1#\#}"
+
+		case "$VAL" in
+			[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f])
+				printf "%s" "$VAL"
+				return 0
+				;;
+		esac
+
+		return 1
+	}
+
+	CLAMP_ALPHA() {
+		VAL="$1"
+
+		case "$VAL" in
+			'' | *[!0-9]*) VAL=0 ;;
+		esac
+
+		[ "$VAL" -lt 0 ] && VAL=0
+		[ "$VAL" -gt 255 ] && VAL=255
+
+		printf "%s" "$VAL"
+	}
+
+	JSONPATH="$THEME_DIR/${ROLE}.json"
+
+	if [ -e "$THEME_DIR/active.txt" ]; then
+		read -r THEME_ALTERNATE <"$THEME_DIR/active.txt"
+		ALT_JSON="$THEME_DIR/alternate/${THEME_ALTERNATE}_${ROLE}.json"
+		[ -e "$ALT_JSON" ] && JSONPATH="$ALT_JSON"
+	fi
+
+	if [ -e "$JSONPATH" ]; then
+		JQ_VAL=$(jq -r '.background_colour // empty' "$JSONPATH")
+		if [ -n "$JQ_VAL" ] && HEX=$(NORMALISE_HEX "$JQ_VAL"); then
+			BACKGROUND_COLOUR="$HEX"
+		fi
+
+		JQ_VAL=$(jq -r '.background_gradient_colour // empty' "$JSONPATH")
+		if [ -n "$JQ_VAL" ] && HEX=$(NORMALISE_HEX "$JQ_VAL"); then
+			BACKGROUND_GRADIENT_COLOUR="$HEX"
+		else
+			BACKGROUND_GRADIENT_COLOUR="$BACKGROUND_COLOUR"
+		fi
+
+		JQ_VAL=$(jq -r '.png_recolour // empty' "$JSONPATH")
+		if [ -n "$JQ_VAL" ] && HEX=$(NORMALISE_HEX "$JQ_VAL"); then
+			PNG_RECOLOUR="$HEX"
+		fi
+
+		JQ_VAL=$(jq -r '.png_recolour_alpha // empty' "$JSONPATH")
+		if [ -n "$JQ_VAL" ]; then
+			RAW_ALPHA=$(CLAMP_ALPHA "$JQ_VAL")
+			PNG_RECOLOUR_ALPHA=$((RAW_ALPHA * 100 / 255))
+		fi
+	fi
+
+	[ -z "$BACKGROUND_GRADIENT_COLOUR" ] && BACKGROUND_GRADIENT_COLOUR="$BACKGROUND_COLOUR"
+
+	SPLASH_ARGS="-r $ROTATE -s $SCALE -g ${BACKGROUND_COLOUR}:${BACKGROUND_GRADIENT_COLOUR}"
+
+	if [ "$PNG_RECOLOUR_ALPHA" -gt 0 ]; then
+		SPLASH_ARGS="$SPLASH_ARGS -t $PNG_RECOLOUR -a $PNG_RECOLOUR_ALPHA"
+	fi
+
+	FBCON_DISABLE
+
+	for SRC in \
+		"$THEME_DIR/$RES_DIR/image/$ROLE.png" \
+		"$THEME_DIR/image/$ROLE.png" \
+		"$MUOS_SHARE_DIR/media/splash/$RES_DIR/$ROLE.png" \
+		"$MUOS_SHARE_DIR/media/splash/$ROLE.png"; do
+		if [ -f "$SRC" ]; then
+			# shellcheck disable=SC2086
+			"$SPLASH_BIN" -i "$SRC" $SPLASH_ARGS
+			return $?
+		fi
+	done
+
+	return 1
+}
+
 GPTOKEYB() {
 	PM_DIR="$(GET_VAR "device" "storage/rom/mount")/MUOS/PortMaster"
 	GPTOKEYB_DIR="$MUOS_SHARE_DIR/emulator/gptokeyb"

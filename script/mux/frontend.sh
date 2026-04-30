@@ -61,6 +61,7 @@ if [ "$DEBUG_MODE" -eq 1 ]; then
 fi
 
 LOG_INFO "$0" 0 "FRONTEND" "Starting Frontend Launcher"
+SHOW_SPLASH clear
 
 while :; do
 	# Reset audio control status

@@ -20,6 +20,10 @@ case "$1" in
 esac
 
 ACTION=$1
+case "$ACTION" in
+	poweroff | shutdown) SHOW_SPLASH shutdown ;;
+	*) SHOW_SPLASH "$ACTION" ;;
+esac
 
 set --
 for OMIT_PID in $(pidof /opt/muos/frontend/muterm /sbin/mount.exfat-fuse 2>/dev/null); do

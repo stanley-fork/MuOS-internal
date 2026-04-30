@@ -9,13 +9,10 @@ WIDTH=$(GET_VAR "device" "screen/internal/width")
 HEIGHT=$(GET_VAR "device" "screen/internal/height")
 
 DO_START() {
-	sed -i -E "s/(defaults\.(ctl|pcm)\.card) [0-9]+/\1 0/g" /usr/share/alsa/alsa.conf
-
-	LOG_INFO "$0" 0 "BOOTING" "Disable Terminal Cursor Blinking"
-	printf '\033[?25l' >/dev/tty0
-
 	LOG_INFO "$0" 0 "BOOTING" "Creating Required Run Directory"
 	mkdir -p "$MUOS_RUN_DIR"
+
+	sed -i -E "s/(defaults\.(ctl|pcm)\.card) [0-9]+/\1 0/g" /usr/share/alsa/alsa.conf
 
 	LOG_INFO "$0" 0 "BOOTING" "Setting 'performance' Governor"
 	printf "performance" >"$GOVERNOR"

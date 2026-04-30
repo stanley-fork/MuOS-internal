@@ -22,6 +22,7 @@ if [ -n "$LAST_PLAY" ]; then
 	LOG_INFO "$0" 0 "FRONTEND" "Checking for network and retrowait"
 
 	if [ "$RETROWAIT" -eq 1 ]; then
+		SHOW_SPLASH clear
 		OIP=0
 
 		while :; do
