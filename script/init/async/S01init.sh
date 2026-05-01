@@ -17,7 +17,7 @@ DO_START() {
 	LOG_INFO "$0" 0 "BOOTING" "Setting 'performance' Governor"
 	printf "performance" >"$GOVERNOR"
 
-	[ -f "$LED_CONTROL_SCRIPT" ] && "$LED_CONTROL_SCRIPT" 1 0 0 0 0 0 0 0
+	[ -x "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" -b AUTO 1 0 0 0 0 0 0 0
 
 	[ "$DEBUG_FS" -eq 1 ] && mount -t debugfs debugfs /sys/kernel/debug
 

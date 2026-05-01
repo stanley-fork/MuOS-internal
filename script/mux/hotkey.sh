@@ -37,11 +37,11 @@ HANDLE_HOTKEY() {
 		SLEEP_SHORT | SLEEP_LONG) SLEEP ;;
 
 		# RGB combos:
-		RGB_MODE) RGBCLI -m up ;;
-		RGB_BRIGHT_UP) RGBCLI -b up ;;
-		RGB_BRIGHT_DOWN) RGBCLI -b down ;;
-		RGB_COLOR_PREV) RGBCLI -c down ;;
-		RGB_COLOR_NEXT) RGBCLI -c up ;;
+#		RGB_MODE) RGBCLI -m up ;;
+#		RGB_BRIGHT_UP) RGBCLI -b up ;;
+#		RGB_BRIGHT_DOWN) RGBCLI -b down ;;
+#		RGB_COLOR_PREV) RGBCLI -c down ;;
+#		RGB_COLOR_NEXT) RGBCLI -c up ;;
 
 		# "RetroArch Network Wait" combos:
 		RETROWAIT_IGNORE) [ "$RETROWAIT" -eq 1 ] && printf "%s" ignore >"$MUOS_RUN_DIR/net_start" ;;
@@ -87,13 +87,6 @@ SLEEP() {
 		SET_VAR "system" "resume_uptime" "$CURR_UPTIME"
 		/opt/muos/script/system/suspend.sh
 	fi
-}
-
-RGBCLI() {
-	RGBCONTROLLER_DIR="$MUOS_SHARE_DIR/application/RGB Controller"
-
-	LD_LIBRARY_PATH="$RGBCONTROLLER_DIR/libs:$LD_LIBRARY_PATH" \
-		"$RGBCONTROLLER_DIR/love" "$RGBCONTROLLER_DIR/rgbcli" "$@"
 }
 
 START_MUHOTKEY() {

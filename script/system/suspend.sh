@@ -115,7 +115,7 @@ SLEEP() {
 	SAVE_CPU_GOV "$CPU_GOV_PATH"
 
 	if [ "$RGB_ENABLE" -eq 1 ] && [ "$LED_RGB" -eq 1 ]; then
-		[ -f "$LED_CONTROL_SCRIPT" ] && "$LED_CONTROL_SCRIPT" 1 0 0 0 0 0 0 0
+		[ -x "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" -b AUTO 1 0 0 0 0 0 0 0
 	fi
 
 	case "$BOARD_NAME" in

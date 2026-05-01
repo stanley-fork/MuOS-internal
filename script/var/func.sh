@@ -17,7 +17,7 @@ WPA_CONFIG="/etc/wpa_supplicant.conf"
 DEVICE_CONTROL_DIR="/opt/muos/device/control"
 MUOS_LOG_DIR="/opt/muos/log"
 MUOS_LOG_BIN="/opt/muos/frontend/mulog"
-LED_CONTROL_SCRIPT="/opt/muos/script/device/rgb.sh"
+MUOS_RGB_BIN="/opt/muos/frontend/murgb"
 MUOS_RUN_DIR="/run/muos"
 MUOS_SHARE_DIR="/opt/muos/share"
 MUOS_STORE_DIR="$MUOS_RUN_DIR/storage"
@@ -27,8 +27,8 @@ IDLE_STATE="$MUOS_RUN_DIR/idle_state"
 
 export HOME XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS PIPEWIRE_RUNTIME_DIR \
 	ALSA_CONFIG WPA_CONFIG DEVICE_CONTROL_DIR MUOS_LOG_DIR MUOS_LOG_BIN \
-	LED_CONTROL_SCRIPT MUOS_RUN_DIR MUOS_SHARE_DIR MUOS_STORE_DIR \
-	OVERLAY_NOP IS_IDLE IDLE_STATE
+	MUOS_RGB_BIN MUOS_RUN_DIR MUOS_SHARE_DIR MUOS_STORE_DIR OVERLAY_NOP \
+	IS_IDLE IDLE_STATE
 
 MUOS_CONF_GLOBAL="/opt/muos/config"
 MUOS_CONF_DEVICE="/opt/muos/device/config"
@@ -790,7 +790,7 @@ DISPLAY_IDLE() {
 
 	[ "$(DISPLAY_READ disp0 getbl)" -gt 10 ] && DISPLAY_WRITE disp0 setbl 10
 
-	[ -f "$LED_CONTROL_SCRIPT" ] && "$LED_CONTROL_SCRIPT" 1 0 0 0 0 0 0 0
+	[ -x "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" -b AUTO 1 0 0 0 0 0 0 0
 
 	printf 1 >"$IDLE_STATE"
 
@@ -1097,11 +1097,11 @@ LED_CONTROL_CHANGE() {
 
 				if [ -f "$RGBCONF_SCRIPT" ]; then
 					"$RGBCONF_SCRIPT"
-				elif [ -f "$LED_CONTROL_SCRIPT" ]; then
-					"$LED_CONTROL_SCRIPT" 1 0 0 0 0 0 0 0
+				elif [ -x "$MUOS_RGB_BIN" ]; then
+					"$MUOS_RGB_BIN" -b AUTO 1 0 0 0 0 0 0 0
 				fi
 			else
-				[ -f "$LED_CONTROL_SCRIPT" ] && "$LED_CONTROL_SCRIPT" 1 0 0 0 0 0 0 0
+				[ -f "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" -b AUTO 1 0 0 0 0 0 0 0
 			fi
 		fi
 	) &

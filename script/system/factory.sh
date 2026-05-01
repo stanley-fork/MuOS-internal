@@ -7,9 +7,9 @@ BOARD_NAME=$(GET_VAR "device" "board/name")
 
 if [ "$LED_RGB" -eq 1 ]; then
 	case "$BOARD_NAME" in
-		rg*) /opt/muos/script/device/rgb.sh 2 255 225 173 1 ;;
-		tui-brick) /opt/muos/script/device/rgb.sh 1 10 225 173 1 225 173 1 225 173 1 225 173 1 225 173 1 ;;
-		tui-spoon) /opt/muos/script/device/rgb.sh 1 10 225 173 1 225 173 1 225 173 1 ;;
+		rg*) "$MUOS_RGB_BIN" -b SERIAL 2 255 225 173 1 ;;
+		tui-brick) "$MUOS_RGB_BIN" -b SYSFS 1 10 225 173 1 225 173 1 225 173 1 225 173 1 225 173 1 ;;
+		tui-spoon) "$MUOS_RGB_BIN" -b SYSFS 1 10 225 173 1 225 173 1 225 173 1 ;;
 		*) ;;
 	esac
 fi
