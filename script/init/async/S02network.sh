@@ -139,7 +139,7 @@ LOAD_MODULE() {
 			;;
 		mgx* | tui*)
 			if ! grep -qw "^$NET_NAME" /proc/modules; then
-				insmod "$NET_MODULE"
+				modprobe -q "$NET_MODULE"
 			fi
 			;;
 		rk*)
