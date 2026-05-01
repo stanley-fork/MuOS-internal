@@ -46,6 +46,8 @@ fi
 LOG_INFO "$0" 0 "BOOTING" "Restoring Saved Volume"
 RESTORE_AUDIO_VOLUME || LOG_WARN "$0" 0 "BOOTING" "Unable to restore saved volume"
 
+LED_CONTROL_CHANGE
+
 if [ "$SKIP" -eq 0 ]; then
 	LOG_INFO "$0" 0 "FRONTEND" "Checking for last or resume startup"
 
