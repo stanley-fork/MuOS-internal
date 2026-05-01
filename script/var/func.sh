@@ -790,7 +790,7 @@ DISPLAY_IDLE() {
 
 	[ "$(DISPLAY_READ disp0 getbl)" -gt 10 ] && DISPLAY_WRITE disp0 setbl 10
 
-	[ -x "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" -b AUTO 1 0 0 0 0 0 0 0
+	[ -x "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" off
 
 	printf 1 >"$IDLE_STATE"
 
@@ -1082,29 +1082,7 @@ KERNEL_TUNING() {
 }
 
 LED_CONTROL_CHANGE() {
-	(
-		if [ "$(GET_VAR "device" "led/rgb")" -eq 1 ]; then
-			if [ "$(GET_VAR "config" "settings/general/rgb")" -eq 1 ]; then
-				ACTIVE="$(GET_VAR "config" "theme/active")"
-				RGBCONF_SCRIPT="$MUOS_STORE_DIR/theme/$ACTIVE/rgb/rgbconf.sh"
-				TIMEOUT=10
-				WAIT=0
-
-				while [ ! -f "$RGBCONF_SCRIPT" ] && [ "$WAIT" -lt "$TIMEOUT" ]; do
-					sleep 1
-					WAIT=$((WAIT + 1))
-				done
-
-				if [ -f "$RGBCONF_SCRIPT" ]; then
-					"$RGBCONF_SCRIPT"
-				elif [ -x "$MUOS_RGB_BIN" ]; then
-					"$MUOS_RGB_BIN" -b AUTO 1 0 0 0 0 0 0 0
-				fi
-			else
-				[ -f "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" -b AUTO 1 0 0 0 0 0 0 0
-			fi
-		fi
-	) &
+	[ "$(GET_VAR "device" "led/rgb")" -eq 1 ] && "$MUOS_RGB_BIN" restore
 }
 
 DEVICE_THEME_FIX() {
@@ -1505,7 +1483,7 @@ IS_MUTERM() {
 }
 
 FBCON_DISABLE() {
-  	# TODO: Add advanced option for blinkies! (for antiKk)
+	# TODO: Add advanced option for blinkies! (for antiKk)
 	for VTCON in /sys/class/vtconsole/vtcon*; do
 		[ -e "$VTCON/name" ] || continue
 

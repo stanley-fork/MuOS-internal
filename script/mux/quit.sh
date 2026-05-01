@@ -83,7 +83,7 @@ HALT_SYSTEM() {
 	HALT_CMD="$1"
 	HALT_SRC="$2"
 
-	[ -x "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" -b AUTO 1 0 0 0 0 0 0 0
+	[ -x "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" off
 
 	LOG_INFO "$0" 0 "QUIT" "$(printf "Quitting system (cmd: %s) (src: %s)" "$HALT_CMD" "$HALT_SRC")"
 

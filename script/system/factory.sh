@@ -2,18 +2,6 @@
 
 . /opt/muos/script/var/func.sh
 
-LED_RGB=$(GET_VAR "device" "led/rgb")
-BOARD_NAME=$(GET_VAR "device" "board/name")
-
-if [ "$LED_RGB" -eq 1 ]; then
-	case "$BOARD_NAME" in
-		rg*) "$MUOS_RGB_BIN" -b SERIAL 2 255 225 173 1 ;;
-		tui-brick) "$MUOS_RGB_BIN" -b SYSFS 1 10 225 173 1 225 173 1 225 173 1 225 173 1 225 173 1 ;;
-		tui-spoon) "$MUOS_RGB_BIN" -b SYSFS 1 10 225 173 1 225 173 1 225 173 1 ;;
-		*) ;;
-	esac
-fi
-
 LOG_INFO "$0" 0 "FACTORY RESET" "Setting date time to default"
 date 010100002026
 hwclock -w
