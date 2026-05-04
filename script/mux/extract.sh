@@ -7,6 +7,8 @@ set -eu
 [ -z "${THEME_INSTALLING:-}" ] && FRONTEND stop
 
 ALL_DONE() {
+  	[ -e "/tmp/no_fe" ] && exit 0
+
 	printf "\nSync Filesystem\n"
 	sync
 
