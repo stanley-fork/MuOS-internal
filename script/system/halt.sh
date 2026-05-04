@@ -200,10 +200,10 @@ STOP_SERVICES
 
 LOG_SUCCESS "$0" 0 "HALT" "Service stop sequence complete!"
 
-# Send SIGTERM to remaining processes. Wait up to 10s before mopping up
+# Send SIGTERM to remaining processes. Wait up to 3s before mopping up
 # with SIGKILL, then wait up to 1s more for everything to die.
 LOG_INFO "$0" 0 "HALT" "Terminating remaining processes (TERM)"
-if ! KILL_AND_WAIT 10 TERM "$@"; then
+if ! KILL_AND_WAIT 3 TERM "$@"; then
 	LOG_WARN "$0" 0 "HALT" "TERM timeout; escalating to KILL"
 	KILL_AND_WAIT 1 KILL "$@"
 fi
