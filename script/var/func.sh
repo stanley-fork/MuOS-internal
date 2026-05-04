@@ -1393,9 +1393,14 @@ SHOW_SPLASH() {
 
 	FBCON_DISABLE
 
+	CURR_LANG="$(GET_VAR "config" "settings/general/language")"
+
 	for SRC in \
+		"$THEME_DIR/$RES_DIR/image/$CURR_LANG/$ROLE.png" \
 		"$THEME_DIR/$RES_DIR/image/$ROLE.png" \
+		"$THEME_DIR/image/$CURR_LANG/$ROLE.png" \
 		"$THEME_DIR/image/$ROLE.png" \
+		"$MUOS_SHARE_DIR/media/splash/$RES_DIR/$CURR_LANG/$ROLE.png" \
 		"$MUOS_SHARE_DIR/media/splash/$RES_DIR/$ROLE.png" \
 		"$MUOS_SHARE_DIR/media/splash/$ROLE.png"; do
 		if [ -f "$SRC" ]; then
