@@ -3,7 +3,7 @@
 . /opt/muos/script/var/func.sh
 
 USAGE() {
-	printf 'Usage: %s close|poweroff|reboot frontend|osf|sleep\n' "$0" >&2
+	printf 'Usage: %s close|poweroff|reboot frontend|osf|sleep [wait]\n' "$0" >&2
 	exit 1
 }
 
@@ -13,6 +13,13 @@ USAGE() {
 
 TERM_GRACE_SEC=3
 KILL_WAIT_SEC=7
+
+WAIT_ACTION() {
+	[ "$WAIT_SEC" -gt 0 ] || return 0
+
+	LOG_INFO "$0" 0 "QUIT" "$(printf "Waiting %s second(s)..." "$WAIT_SEC")"
+	sleep "$WAIT_SEC"
+}
 
 CLOSE_CONTENT() {
 	FG_PROC_VAL=$(GET_VAR "system" "foreground_process")
@@ -83,7 +90,7 @@ HALT_SYSTEM() {
 	HALT_CMD="$1"
 	HALT_SRC="$2"
 
-	[ -x "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" off
+	LED_CONTROL_CHANGE off
 
 	LOG_INFO "$0" 0 "QUIT" "$(printf "Quitting system (cmd: %s) (src: %s)" "$HALT_CMD" "$HALT_SRC")"
 
@@ -104,12 +111,7 @@ HALT_SYSTEM() {
 
 	LOG_INFO "$0" 0 "QUIT" "Detect if 'osf' or 'sleep' was triggered"
 	case "$HALT_SRC" in
-		osf)
-			# Never relaunch content after failsafe reboot
-			# since it may have been what hung or crashed.
-			DISPLAY_BLANK
-			CLEAR_LAST_PLAY
-			;;
+		osf) CLEAR_LAST_PLAY ;;
 		sleep)
 			DISPLAY_BLANK
 			CLOSE_CONTENT
@@ -120,14 +122,21 @@ HALT_SYSTEM() {
 	TERMINATE_SYNCTHING
 }
 
-[ "$#" -eq 2 ] || USAGE
+[ "$#" -eq 2 ] || [ "$#" -eq 3 ] || USAGE
+
+WAIT_SEC="${3:-0}"
+case "$WAIT_SEC" in
+	'' | *[!0123456789]*) USAGE ;;
+esac
 
 case "$1" in
 	close)
+		WAIT_ACTION
 		LOG_INFO "$0" 0 "QUIT" "Closing content..."
 		CLOSE_CONTENT
 		;;
 	poweroff | reboot)
+		WAIT_ACTION
 		[ -f "/tmp/btl_go" ] && UPDATE_BOOTLOGO
 		HALT_SYSTEM "$1" "$2"
 		sync && /opt/muos/script/system/halt.sh "$1"
