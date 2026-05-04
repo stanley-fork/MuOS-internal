@@ -6,7 +6,7 @@ FACTORY_RESET=$(GET_VAR "config" "boot/factory_reset")
 
 DO_START() {
 	if [ "$FACTORY_RESET" -eq 1 ]; then
-		/opt/muos/frontend/murgb off
+		LED_CONTROL_CHANGE off
 		/opt/muos/script/system/factory.sh
 		/opt/muos/script/system/halt.sh reboot
 
@@ -24,7 +24,7 @@ DO_START() {
 
 	if [ "${CONSOLE_MODE:-0}" -eq 0 ]; then
 		LOG_INFO "$0" 0 "BOOTING" "Detecting Charge Mode"
-		/opt/muos/frontend/murgb off
+		LED_CONTROL_CHANGE off
 		/opt/muos/script/device/charge.sh
 	fi
 

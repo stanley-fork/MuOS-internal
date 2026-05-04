@@ -41,7 +41,7 @@ LOW_BATTERY_WARNING() {
 
 		if [ -n "$LED_CMD" ] && [ "$(GET_VAR "config" "settings/general/rgb")" -eq 1 ]; then
 			$LED_CMD
-			[ ! -e "$IS_IDLE" ] && LED_CONTROL_CHANGE
+			[ ! -e "$IS_IDLE" ] && LED_CONTROL_CHANGE restore
 		fi
 	fi
 }

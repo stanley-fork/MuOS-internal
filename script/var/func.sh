@@ -790,7 +790,7 @@ DISPLAY_IDLE() {
 
 	[ "$(DISPLAY_READ disp0 getbl)" -gt 10 ] && DISPLAY_WRITE disp0 setbl 10
 
-	[ -x "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" off
+	LED_CONTROL_CHANGE off
 
 	printf 1 >"$IDLE_STATE"
 
@@ -802,7 +802,7 @@ DISPLAY_ACTIVE() {
 
 	DISPLAY_WRITE disp0 setbl "$(GET_VAR "config" "settings/general/brightness")"
 
-	LED_CONTROL_CHANGE
+	LED_CONTROL_CHANGE restore
 
 	printf 0 >"$IDLE_STATE"
 
@@ -1082,7 +1082,7 @@ KERNEL_TUNING() {
 }
 
 LED_CONTROL_CHANGE() {
-	[ "$(GET_VAR "device" "led/rgb")" -eq 1 ] && "$MUOS_RGB_BIN" restore
+	[ "$(GET_VAR "device" "led/rgb")" -eq 1 ] && "$MUOS_RGB_BIN" "$1"
 }
 
 DEVICE_THEME_FIX() {
@@ -1432,11 +1432,11 @@ TERMINATE_SYNCTHING() {
 	fi
 }
 
-# Terminate any active ssh connections, hopefully also sftp connections too
+# Terminate any active SSH connections, then bring down SSH itself
 STOP_SSHD_GRACEFUL() {
 	pkill -TERM -f 'sshd:.*@' >/dev/null 2>&1
 	sleep 0.2
-	pkill -TERM -x sshd >/dev/null 2>&1
+	pkill -TERM -f sshd >/dev/null 2>&1
 }
 
 LOG_CLEANER() {

@@ -158,7 +158,7 @@ INSTALL() {
 	fi
 
 	UPDATE_BOOTLOGO
-	LED_CONTROL_CHANGE
+	LED_CONTROL_CHANGE restore
 
 	ASSETS_ZIP="$THEME_ACTIVE_DIR/assets.muxzip"
 	if [ -f "$ASSETS_ZIP" ]; then

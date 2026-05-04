@@ -103,6 +103,7 @@ CHECK_RA_AND_SAVE() {
 SLEEP() {
 	RECENT_WAKE_MARK
 
+	LED_CONTROL_CHANGE off
 	ACTIVITY_TRACKER stop
 
 	CHECK_RA_AND_SAVE "SAVE_STATE"
@@ -115,7 +116,7 @@ SLEEP() {
 	SAVE_CPU_GOV "$CPU_GOV_PATH"
 
 	if [ "$RGB_ENABLE" -eq 1 ] && [ "$LED_RGB" -eq 1 ]; then
-		[ -x "$MUOS_RGB_BIN" ] && "$MUOS_RGB_BIN" off
+		LED_CONTROL_CHANGE off
 	fi
 
 	case "$BOARD_NAME" in
@@ -144,7 +145,7 @@ RESUME() {
 	/opt/muos/script/device/module.sh load &
 	MODULE_PID=$!
 
-	LED_CONTROL_CHANGE
+	LED_CONTROL_CHANGE restore
 
 	[ "$USB_FUNCTION" -ne 0 ] && /opt/muos/script/system/usb_gadget.sh resume
 

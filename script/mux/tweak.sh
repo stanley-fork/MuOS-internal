@@ -57,7 +57,7 @@ else
 	/opt/muos/script/device/bright.sh "$C_BRIGHT"
 fi
 
-LED_CONTROL_CHANGE
+LED_CONTROL_CHANGE restore
 
 GET_VAR "config" "settings/colour/temperature" >"$(GET_VAR "device" "screen/colour")"
 
