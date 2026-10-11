@@ -2411,9 +2411,9 @@
                 "name": "FAKE-08",
                 "core": "fake08_libretro.so"
             },
-            "retro8": {
-                "name": "Retro8",
-                "core": "retro8_libretro.so"
+            "picante8": {
+                "name": "Picante8",
+                "core": "picante8_libretro.so"
             }
         },
         "external": {

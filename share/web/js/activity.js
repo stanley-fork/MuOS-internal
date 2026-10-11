@@ -126,7 +126,7 @@
         "potator": "Potator",
         "wasm4": "WASM-4",
         "fake08": "Fake-08",
-        "retro8": "Retro8",
+        "picante8": "Picante8",
         "neocd": "NeoCD",
         "race": "RACE",
         "geolith": "Geolith",
