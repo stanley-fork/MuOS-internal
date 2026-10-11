@@ -44,6 +44,16 @@
 
     el("nav-remote").hidden = !runtime.remoteView;
 
+    function setLabel(button, text, on) {
+        const label = button.querySelector(".btn-label");
+        if (label) label.textContent = text;
+        else button.textContent = text;
+        if (on === undefined) return;
+        button.querySelectorAll("[data-when]").forEach((glyph) => {
+            glyph.toggleAttribute("hidden", (glyph.dataset.when === "on") !== Boolean(on));
+        });
+    }
+
     let layout = "desktop";
     try {
         if (localStorage.getItem(LAYOUT_KEY) === "mobile") layout = "mobile";
@@ -59,7 +69,7 @@
     function applyScreen() {
         el("view-remote").classList.toggle("screen-off", screenOff);
         screenToggle.setAttribute("aria-pressed", String(screenOff));
-        screenToggle.textContent = t(screenOff ? "Show Live View" : "Hide Live View");
+        setLabel(screenToggle, t(screenOff ? "Show Live View" : "Hide Live View"), !screenOff);
     }
 
     function applyLayout() {
@@ -123,10 +133,10 @@
 
     function updateControls() {
         pauseButton.hidden = !allowed() || mode === "manual";
-        pauseButton.textContent = t(paused ? "Resume" : "Pause");
+        setLabel(pauseButton, t(paused ? "Resume" : "Pause"), !paused);
         refreshButton.hidden = !allowed() || mode === "live";
         popoutButton.hidden = !allowed() || canvas.hidden;
-        popoutButton.textContent = t(popped ? "Close pop out" : "Pop out");
+        setLabel(popoutButton, t(popped ? "Close pop out" : "Pop out"));
     }
 
     function describe(status) {

@@ -39,6 +39,9 @@
                 <button class="nav-list-link" type="button" data-view="dash">Dashboard</button>
             </li>
             <li class="nav-list-item">
+                <button class="nav-list-link" type="button" data-view="playing">Now Playing</button>
+            </li>
+            <li class="nav-list-item">
                 <button class="nav-list-link" type="button" data-view="activity">Activity Tracker</button>
             </li>
             <li class="nav-list-item">
@@ -132,41 +135,10 @@
             </div>
         </section>
 
-        <section class="box player-box" id="player-box" aria-label="Wasabi" hidden>
-            <h2 id="player-heading">Now playing in Wasabi</h2>
-            <p class="player-title" id="player-title"></p>
-            <p class="note" id="player-detail"></p>
-            <div class="player-seek" id="player-seek-row">
-                <span class="player-time" id="player-position">0:00</span>
-                <input type="range" id="player-seek" min="0" max="1000" step="1" value="0" aria-label="Position">
-                <span class="player-time" id="player-duration">0:00</span>
-            </div>
-            <div class="player-controls">
-                <button class="player-button" type="button" id="player-previous" aria-label="Previous">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
-                </button>
-                <button class="player-button player-skip" type="button" id="player-back" aria-label="Back 10 seconds">-10</button>
-                <button class="player-button player-main" type="button" id="player-toggle" aria-label="Pause">
-                    <svg viewBox="0 0 24 24" aria-hidden="true" id="player-pause-icon"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-                    <svg viewBox="0 0 24 24" aria-hidden="true" id="player-play-icon" hidden><path d="M7 5v14l12-7z"/></svg>
-                </button>
-                <button class="player-button player-skip" type="button" id="player-forward" aria-label="Forward 10 seconds">+10</button>
-                <button class="player-button" type="button" id="player-next" aria-label="Next">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
-                </button>
-                <button class="player-button player-stop" type="button" id="player-stop" aria-label="Stop playback">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg>
-                </button>
-            </div>
-            <div class="player-footer">
-                <label class="player-volume">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4zM16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>
-                    <input type="range" id="player-volume-slider" min="0" max="200" step="5" value="100" aria-label="Playback volume">
-                    <span class="player-time" id="player-volume">100%</span>
-                </label>
-                <button class="link" type="button" id="player-unlock" hidden>Unlock to control playback</button>
-            </div>
-        </section>
+        <button class="box playing-link" type="button" id="playing-link" data-view="playing" hidden>
+            <span id="playing-link-text">Something is playing on the device.</span>
+            <span class="playing-link-go">Open Now Playing</span>
+        </button>
 
         <section class="box device-switcher" id="device-switcher" aria-label="Other MustardOS devices" hidden>
             <h2>Other MustardOS devices</h2>
@@ -327,6 +299,82 @@
         </div>
     </div>
 
+    <div class="view" id="view-playing" hidden>
+        <h1><strong>Now Playing</strong></h1>
+
+        <p class="box note playing-empty" id="playing-empty">Nothing is playing on the device right now. Start something
+            in Pickles or Wasabi and it appears here.</p>
+
+        <section class="box player-box" id="player-box" aria-label="Wasabi" hidden>
+            <h2 id="player-heading">Now playing in Wasabi</h2>
+            <p class="player-title" id="player-title"></p>
+            <p class="note" id="player-detail"></p>
+            <div class="player-seek" id="player-seek-row">
+                <span class="player-time" id="player-position">0:00</span>
+                <input type="range" id="player-seek" min="0" max="1000" step="1" value="0" aria-label="Position">
+                <span class="player-time" id="player-duration">0:00</span>
+            </div>
+            <div class="player-controls">
+                <button class="player-button" type="button" id="player-previous" aria-label="Previous">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+                </button>
+                <button class="player-button player-skip" type="button" id="player-back" aria-label="Back 10 seconds">-10</button>
+                <button class="player-button player-main" type="button" id="player-toggle" aria-label="Pause">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" id="player-pause-icon"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" id="player-play-icon" hidden><path d="M7 5v14l12-7z"/></svg>
+                </button>
+                <button class="player-button player-skip" type="button" id="player-forward" aria-label="Forward 10 seconds">+10</button>
+                <button class="player-button" type="button" id="player-next" aria-label="Next">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+                </button>
+                <button class="player-button player-small" type="button" id="player-shuffle" aria-pressed="false" aria-label="Shuffle">
+                    <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 4h4v4M20 4l-7 7M4 20l6-6M16 20h4v-4M20 20 4 4"/></svg>
+                </button>
+                <button class="player-button player-small" type="button" id="player-repeat" aria-label="Repeat off">
+                    <svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11V8a2 2 0 0 1 2-2h13M16 3l3 3-3 3M20 13v3a2 2 0 0 1-2 2H5M8 21l-3-3 3-3"/></svg>
+                    <span class="player-repeat-one" id="player-repeat-one" hidden>1</span>
+                </button>
+                <button class="player-button player-stop" type="button" id="player-stop" aria-label="Stop playback">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg>
+                </button>
+            </div>
+            <div class="player-footer">
+                <label class="player-volume">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4zM16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg>
+                    <input type="range" id="player-volume-slider" min="0" max="200" step="5" value="100" aria-label="Playback volume">
+                    <span class="player-time" id="player-volume">100%</span>
+                </label>
+                <button class="link" type="button" id="player-unlock" hidden>Unlock to control playback</button>
+            </div>
+            <details class="player-list" id="player-list-box" hidden>
+                <summary id="player-list-summary">Playlist</summary>
+                <ol class="player-list-items" id="player-list"></ol>
+            </details>
+        </section>
+
+        <section class="box player-box game-box" id="game-box" aria-label="Pickles" hidden>
+            <h2 id="game-heading">Playing in Pickles</h2>
+            <p class="player-title" id="game-title"></p>
+            <p class="note" id="game-detail"></p>
+            <p class="note game-state" id="game-state"></p>
+            <div class="player-controls">
+                <button class="player-button player-main" type="button" id="game-toggle" aria-label="Pause">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" id="game-pause-icon"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+                    <svg viewBox="0 0 24 24" aria-hidden="true" id="game-play-icon" hidden><path d="M7 5v14l12-7z"/></svg>
+                </button>
+                <button class="player-button" type="button" id="game-slow" aria-pressed="false"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM12 7v5l3 2"/></svg><span class="btn-label">Slow</span></button>
+                <button class="player-button" type="button" id="game-fast" aria-pressed="false"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6l7 6-7 6zM12 6l7 6-7 6z"/></svg><span class="btn-label">Fast</span></button>
+                <button class="player-button" type="button" id="game-fps"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0M12 17l4-5"/></svg><span class="btn-label">FPS</span></button>
+            </div>
+            <div class="player-controls">
+                <button class="player-button" type="button" id="game-save"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11l3 3v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1zM8 4v5h7V4M8 20v-6h8v6"/></svg><span class="btn-label">Quick Save</span></button>
+                <button class="player-button" type="button" id="game-load"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7a1 1 0 0 1 1-1h4l2 2h8a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1zM12 17v-6M9 13l3-3 3 3"/></svg><span class="btn-label">Quick Load</span></button>
+                <button class="player-button player-stop" type="button" id="game-quit"><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 8l-4 4 4 4M6 12h10"/></svg><span class="btn-label">Quit</span></button>
+            </div>
+            <button class="link" type="button" id="game-unlock" hidden>Unlock to control the game</button>
+        </section>
+    </div>
+
     <div class="view" id="view-remote" hidden>
         <div class="view-head">
             <h1><strong>Remote View</strong></h1>
@@ -335,11 +383,11 @@
                     <button class="remote-layout-option" type="button" data-layout="desktop" aria-pressed="true">Desktop</button>
                     <button class="remote-layout-option" type="button" data-layout="mobile" aria-pressed="false">Mobile</button>
                 </div>
-                <button class="remote-layout-option remote-screen-toggle" type="button" id="remote-screen-toggle" aria-pressed="false">Hide Live View</button>
-                <button class="link" type="button" id="remote-pause" hidden>Pause</button>
-                <button class="link" type="button" id="remote-refresh" hidden>Refresh now</button>
-                <button class="link" type="button" id="remote-popout" hidden>Pop out</button>
-                <button class="link" type="button" id="remote-save" hidden>Save image</button>
+                <button class="remote-layout-option remote-screen-toggle icon-link" type="button" id="remote-screen-toggle" aria-pressed="false"><svg class="glyph" data-when="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A10 10 0 0 1 12 5c5 0 9 5 9 7a11 11 0 0 1-2.2 3.2M6.1 6.1C4.2 7.5 3 9.7 3 12c0 2 4 7 9 7a9 9 0 0 0 4-.9"/></svg><svg class="glyph" data-when="off" hidden viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg><span class="btn-label">Hide Live View</span></button>
+                <button class="link icon-link" type="button" id="remote-pause" hidden><svg class="glyph" data-when="on" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg><svg class="glyph" data-when="off" hidden viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l12-7z"/></svg><span class="btn-label">Pause</span></button>
+                <button class="link icon-link" type="button" id="remote-refresh" hidden><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg><span class="btn-label">Refresh now</span></button>
+                <button class="link icon-link" type="button" id="remote-popout" hidden><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-8 8M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg><span class="btn-label">Pop out</span></button>
+                <button class="link icon-link" type="button" id="remote-save" hidden><svg class="glyph" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3M12 4v11M7 10l5 5 5-5"/></svg><span class="btn-label">Save image</span></button>
             </div>
         </div>
 
@@ -513,6 +561,7 @@
     <script src="js/remote.js" defer></script>
     <script src="js/controls.js" defer></script>
     <script src="js/player.js" defer></script>
+    <script src="js/game.js" defer></script>
     <script src="js/tools.js" defer></script>
     <!-- Catalogue and save management remain available in source while hidden for this release. -->
     <script src="js/boot.js" defer></script>

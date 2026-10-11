@@ -25,7 +25,16 @@
     const volumeText = el("player-volume");
     const stop = el("player-stop");
     const unlock = el("player-unlock");
-    const controls = [toggle, back, forward, previous, next, stop, seek, volume];
+    const shuffle = el("player-shuffle");
+    const repeat = el("player-repeat");
+    const repeatOne = el("player-repeat-one");
+    const listBox = el("player-list-box");
+    const listSummary = el("player-list-summary");
+    const list = el("player-list");
+    const controls = [toggle, back, forward, previous, next, stop, seek, volume, shuffle, repeat];
+
+    let listCount = -1;
+    let listLoading = false;
 
     let state = null;
     let receivedAt = 0;
@@ -34,7 +43,54 @@
     let pollTimer = 0;
     let sending = false;
 
-    const visible = () => !document.hidden && !el("view-dash").hidden;
+    const visible = () => !document.hidden && (!el("view-dash").hidden || !el("view-playing").hidden);
+
+    const REPEAT_LABELS = ["Repeat off", "Repeat this item", "Repeat all"];
+
+    async function loadList() {
+        if (listLoading) return;
+        listLoading = true;
+        try {
+            const payload = await MU.api("api/player/list");
+            const items = (payload && payload.items) || [];
+            list.replaceChildren();
+            for (const item of items) {
+                const row = document.createElement("li");
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "player-list-item";
+                button.dataset.index = String(item.index);
+                button.textContent = item.title || t("Unknown");
+                button.addEventListener("click", () => send("jump", item.index));
+                row.append(button);
+                list.append(row);
+            }
+            listCount = items.length;
+        } catch (_) {
+            listCount = -1;
+        } finally {
+            listLoading = false;
+            paintList();
+        }
+    }
+
+    function paintList() {
+        if (!state || state.count < 2) {
+            listBox.hidden = true;
+            return;
+        }
+        listBox.hidden = false;
+        listSummary.textContent = state.channels ? t("Channels (%s)", state.count) : t("Playlist (%s)", state.count);
+        if (listCount !== state.count) loadList();
+        const canControl = MU.canControlPlayer();
+        list.querySelectorAll(".player-list-item").forEach((button) => {
+            const current = Number(button.dataset.index) === state.index;
+            button.classList.toggle("current", current);
+            if (current) button.setAttribute("aria-current", "true");
+            else button.removeAttribute("aria-current");
+            button.disabled = !canControl || sending;
+        });
+    }
 
     function clock(seconds) {
         const total = Math.max(0, Math.floor(Number(seconds) || 0));
@@ -61,11 +117,13 @@
     function publish() {
         MU.playerState = state;
         window.dispatchEvent(new CustomEvent("muos-player-state", {detail: state}));
+        if (MU.paintPlaying) MU.paintPlaying();
     }
 
     function paint() {
         if (!state) {
             box.hidden = true;
+            listCount = -1;
             if (MU.playerState) publish();
             return;
         }
@@ -111,6 +169,19 @@
             volume.value = String(state.volume);
             volumeText.textContent = `${state.volume}%`;
         }
+
+        const modes = !state.live && state.count > 0;
+        shuffle.hidden = !modes || state.count < 2;
+        repeat.hidden = !modes;
+        shuffle.setAttribute("aria-pressed", String(Boolean(state.shuffle)));
+        shuffle.classList.toggle("on", Boolean(state.shuffle));
+        const repeatMode = Number(state.repeat) || 0;
+        repeat.setAttribute("aria-label", t(REPEAT_LABELS[repeatMode] || REPEAT_LABELS[0]));
+        repeat.title = t(REPEAT_LABELS[repeatMode] || REPEAT_LABELS[0]);
+        repeat.classList.toggle("on", repeatMode > 0);
+        repeatOne.hidden = repeatMode !== 1;
+
+        paintList();
         publish();
     }
 
@@ -170,14 +241,15 @@
     });
     volume.addEventListener("change", async () => {
         const target = Number(volume.value);
-        const change = state ? target - Number(state.volume) : 0;
-        if (change) {
+        if (state && target !== Number(state.volume)) {
             state = {...state, volume: target};
-            await send("volume", change);
+            await send("setvolume", target);
         }
         adjusting = false;
         paint();
     });
+    shuffle.addEventListener("click", () => send("shuffle", state && state.shuffle ? 0 : 1));
+    repeat.addEventListener("click", () => send("repeat", ((Number(state && state.repeat) || 0) + 1) % 3));
     stop.addEventListener("click", () => send("stop"));
     unlock.addEventListener("click", () => MU.unlock());
 
@@ -199,7 +271,9 @@
         schedule();
     });
     MU.onAuthChange(paint);
-    document.querySelectorAll('[data-view="dash"]').forEach((tab) => tab.addEventListener("click", refresh));
+    document.querySelectorAll('[data-view="dash"], [data-view="playing"]').forEach((tab) => {
+        tab.addEventListener("click", refresh);
+    });
 
     refresh().then(schedule);
 }());

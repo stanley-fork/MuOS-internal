@@ -713,3 +713,31 @@ body.remote-mobile #view-remote.screen-off .remote-box { grid-template-columns: 
     body.remote-mobile #view-remote.screen-off .remote-box { grid-template-rows: auto auto auto auto 1fr; grid-template-areas: "ls . rs" "dpad . face" "centre centre centre" "vol . bright"; }
 }
 .remote-pad.paused .pad-button { opacity: .35; cursor: default; }
+.glyph { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.glyph[hidden] { display: none; }
+.icon-link { display: inline-flex; align-items: center; gap: 5px; }
+.icon-link[hidden] { display: none; }
+.player-button svg.glyph { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+.player-button .glyph + .btn-label { margin-inline-start: 6px; }
+.player-small svg.glyph { width: 16px; height: 16px; }
+.player-button.on, .player-button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.player-repeat-one { margin-inline-start: 2px; font-size: .7rem; }
+.player-repeat-one[hidden] { display: none; }
+.player-list { border-top: 1px solid var(--line); padding-top: 8px; }
+.player-list[hidden] { display: none; }
+.player-list summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
+.player-list-items { display: grid; gap: 2px; max-height: 320px; margin: 8px 0 0; padding: 0; overflow-y: auto; list-style: none; counter-reset: track; }
+.player-list-items li { counter-increment: track; }
+.player-list-item { display: flex; width: 100%; gap: 10px; padding: 6px 8px; border: 0; border-radius: 6px; background: none; color: var(--text); cursor: pointer; font: inherit; font-size: .85rem; text-align: start; }
+.player-list-item::before { content: counter(track); min-width: 2.5ch; color: var(--muted); font-family: var(--mono); text-align: end; }
+.player-list-item:hover:not(:disabled) { background: var(--box-alt); color: var(--head); }
+.player-list-item.current { background: var(--box-alt); color: var(--accent); }
+.player-list-item:disabled { cursor: default; }
+.playing-empty[hidden], .playing-link[hidden], .game-box[hidden] { display: none; }
+.playing-link { display: flex; width: 100%; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; border-top-color: var(--accent); color: var(--text); cursor: pointer; font: inherit; text-align: start; }
+.playing-link:hover { border-color: var(--accent); }
+.playing-link-go { color: var(--accent); font-size: .85rem; }
+.game-box .game-state { color: var(--text); }
+.game-box .game-state[hidden] { display: none; }
+.game-box .link[hidden] { display: none; }
+
