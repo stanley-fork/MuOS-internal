@@ -72,12 +72,19 @@ else
 fi
 
 # 3) Panel resolution
-FBSET_GEO=$(fbset -s 2>/dev/null | awk '/^ *geometry/ {print $2" "$3; exit}')
+FBSET_GEO=$(fbset -s 2>/dev/null | awk '$1 == "geometry" {print $2" "$3; exit}')
 PXRES=${FBSET_GEO%% *}
 PYRES=${FBSET_GEO##* }
 
 # Rotation
 ROT="$(GET_VAR device sdl/rotation)"
+
+case "$(GET_VAR "device" "board/name")" in
+	rg-vita*)
+		export SDL_KMSDRM_ORIENTATION=3
+		ROT=1
+		;;
+esac
 
 if [ "$ROT" = "1" ]; then
 	if [ "$PXRES" -ge "$PYRES" ]; then
