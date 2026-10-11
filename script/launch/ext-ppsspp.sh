@@ -24,6 +24,11 @@ case "$(GET_VAR "device" "board/name")" in
 
 		# Keep this until we build with Vulkan
 		RESET_GRAPHICS_BACKEND
+
+		# PowerVR returns no core GLES functions through eglGetProcAddress, which hides GLES 3 from PPSSPP
+		case "$(GET_VAR "device" "board/name")" in
+			tui*) export LD_PRELOAD="$PPSSPP_DIR/libs/libeglproc.so${LD_PRELOAD:+:$LD_PRELOAD}" ;;
+		esac
 		;;
 	rg*) RESET_GRAPHICS_BACKEND ;;
 esac
